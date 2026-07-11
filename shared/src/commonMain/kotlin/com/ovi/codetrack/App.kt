@@ -1,48 +1,61 @@
 package com.ovi.codetrack
 
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.safeContentPadding
-import androidx.compose.material3.Button
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
-import androidx.compose.runtime.*
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
-import org.jetbrains.compose.resources.painterResource
-
-import codetrack.shared.generated.resources.Res
-import codetrack.shared.generated.resources.compose_multiplatform
+import androidx.compose.runtime.Composable
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
+import com.ovi.codetrack.shared.presentation.navigation.AddSubmissionRoute
+import com.ovi.codetrack.shared.presentation.navigation.DashboardRoute
+import com.ovi.codetrack.shared.presentation.navigation.LoginRoute
+import com.ovi.codetrack.shared.presentation.screens.AddSubmissionScreen
+import com.ovi.codetrack.shared.presentation.screens.DashboardScreen
+import com.ovi.codetrack.shared.presentation.screens.LoginScreen
+import com.ovi.codetrack.shared.presentation.theme.CodeTrackTheme
+import dev.gitlive.firebase.Firebase
+import dev.gitlive.firebase.auth.auth
 
 @Composable
-@Preview
 fun App() {
-    MaterialTheme {
-        var showContent by remember { mutableStateOf(false) }
-        Column(
-            modifier = Modifier
-                .background(MaterialTheme.colorScheme.primaryContainer)
-                .safeContentPadding()
-                .fillMaxSize(),
-            horizontalAlignment = Alignment.CenterHorizontally,
-        ) {
-            Button(onClick = { showContent = !showContent }) {
-                Text("Click me!")
+    CodeTrackTheme {
+        val navController = rememberNavController()
+        val currentUser = Firebase.auth.currentUser
+        
+        val startDestination: Any = if (currentUser != null) {
+            DashboardRoute
+        } else {
+            LoginRoute
+        }
+
+        NavHost(navController = navController, startDestination = startDestination) {
+            composable<LoginRoute> {
+                LoginScreen(
+                    onLoginSuccess = {
+                        navController.navigate(DashboardRoute) {
+                            popUpTo(LoginRoute) { inclusive = true }
+                        }
+                    }
+                )
             }
-            AnimatedVisibility(showContent) {
-                val greeting = remember { Greeting().greet() }
-                Column(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                ) {
-                    Image(painterResource(Res.drawable.compose_multiplatform), null)
-                    Text("Compose: $greeting")
-                }
+            
+            composable<DashboardRoute> {
+                DashboardScreen(
+                    onNavigateToAdd = {
+                        navController.navigate(AddSubmissionRoute)
+                    },
+                    onLogout = {
+                        navController.navigate(LoginRoute) {
+                            popUpTo(DashboardRoute) { inclusive = true }
+                        }
+                    }
+                )
+            }
+            
+            composable<AddSubmissionRoute> {
+                AddSubmissionScreen(
+                    onNavigateBack = {
+                        navController.popBackStack()
+                    }
+                )
             }
         }
     }
