@@ -12,6 +12,8 @@ data class SubmissionEntity(
     val tags: String,
     val timeTakenMinutes: Int,
     val timestamp: Long,
+    val timeComplexity: String? = null,
+    val spaceComplexity: String? = null,
     val notes: String,
     val isSynced: Boolean
 )

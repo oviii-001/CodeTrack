@@ -21,6 +21,7 @@ dependencies {
     debugImplementation(libs.compose.uiTooling)
     
     implementation(platform(libs.firebase.bom))
+    implementation("com.google.android.gms:play-services-auth:21.1.1")
 }
 
 android {

@@ -29,6 +29,8 @@ class AddSubmissionViewModel(
         difficulty: String,
         tagsStr: String,
         timeTakenStr: String,
+        timeComplexityStr: String,
+        spaceComplexityStr: String,
         notes: String
     ) {
         val problemId = problemIdStr.toIntOrNull()
@@ -49,6 +51,8 @@ class AddSubmissionViewModel(
             tags = tagsStr.split(",").map { it.trim() }.filter { it.isNotEmpty() },
             timeTakenMinutes = timeTaken,
             timestamp = System.currentTimeMillis(),
+            timeComplexity = timeComplexityStr.takeIf { it.isNotBlank() },
+            spaceComplexity = spaceComplexityStr.takeIf { it.isNotBlank() },
             notes = notes
         )
 

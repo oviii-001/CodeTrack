@@ -42,6 +42,7 @@ kotlin {
         androidMain.dependencies {
             implementation(libs.compose.uiToolingPreview)
             api(libs.koin.android)
+            implementation("com.google.android.gms:play-services-auth:21.1.1")
         }
         commonMain.dependencies {
             implementation(libs.compose.runtime)

@@ -131,6 +131,8 @@ class SubmissionRepositoryImpl(
         tags = tags.split(",").filter { it.isNotBlank() },
         timeTakenMinutes = timeTakenMinutes,
         timestamp = timestamp,
+        timeComplexity = timeComplexity,
+        spaceComplexity = spaceComplexity,
         notes = notes
     )
 
@@ -142,6 +144,8 @@ class SubmissionRepositoryImpl(
         tags = tags.joinToString(","),
         timeTakenMinutes = timeTakenMinutes,
         timestamp = timestamp,
+        timeComplexity = timeComplexity,
+        spaceComplexity = spaceComplexity,
         notes = notes,
         isSynced = isSynced
     )
@@ -154,6 +158,8 @@ class SubmissionRepositoryImpl(
         tags = tags.split(",").filter { it.isNotBlank() },
         timeTakenMinutes = timeTakenMinutes,
         timestamp = timestamp,
+        timeComplexity = timeComplexity,
+        spaceComplexity = spaceComplexity,
         notes = notes
     )
     
@@ -165,6 +171,8 @@ class SubmissionRepositoryImpl(
         tags = tags.joinToString(","),
         timeTakenMinutes = timeTakenMinutes,
         timestamp = timestamp,
+        timeComplexity = timeComplexity,
+        spaceComplexity = spaceComplexity,
         notes = notes,
         isSynced = isSynced
     )

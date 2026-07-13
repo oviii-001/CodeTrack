@@ -8,7 +8,9 @@ data class SubmissionUiModel(
     val difficulty: Difficulty,
     val tags: List<String>,
     val formattedTimeTaken: String,
-    val formattedDate: String
+    val formattedDate: String,
+    val timeComplexity: String? = null,
+    val spaceComplexity: String? = null
 )
 
 enum class Difficulty {
@@ -35,6 +37,8 @@ fun Submission.toUiModel(): SubmissionUiModel {
         difficulty = difficultyEnum,
         tags = tags,
         formattedTimeTaken = "$timeTakenMinutes mins",
-        formattedDate = formattedDateStr
+        formattedDate = formattedDateStr,
+        timeComplexity = timeComplexity,
+        spaceComplexity = spaceComplexity
     )
 }

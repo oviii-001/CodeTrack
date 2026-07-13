@@ -4,12 +4,15 @@ import androidx.compose.runtime.Composable
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.toRoute
 import com.ovi.codetrack.shared.presentation.navigation.AddSubmissionRoute
 import com.ovi.codetrack.shared.presentation.navigation.DashboardRoute
 import com.ovi.codetrack.shared.presentation.navigation.LoginRoute
+import com.ovi.codetrack.shared.presentation.navigation.MainRoute
 import com.ovi.codetrack.shared.presentation.screens.AddSubmissionScreen
 import com.ovi.codetrack.shared.presentation.screens.DashboardScreen
 import com.ovi.codetrack.shared.presentation.screens.LoginScreen
+import com.ovi.codetrack.shared.presentation.screens.MainScreen
 import com.ovi.codetrack.shared.presentation.theme.CodeTrackTheme
 import dev.gitlive.firebase.Firebase
 import dev.gitlive.firebase.auth.auth
@@ -21,7 +24,7 @@ fun App() {
         val currentUser = Firebase.auth.currentUser
         
         val startDestination: Any = if (currentUser != null) {
-            DashboardRoute
+            MainRoute
         } else {
             LoginRoute
         }
@@ -37,21 +40,25 @@ fun App() {
                 )
             }
             
-            composable<DashboardRoute> {
-                DashboardScreen(
-                    onNavigateToAdd = {
-                        navController.navigate(AddSubmissionRoute)
+            composable<MainRoute> {
+                MainScreen(
+                    onNavigateToAdd = { problemId, problemName, difficulty ->
+                        navController.navigate(AddSubmissionRoute(problemId, problemName, difficulty))
                     },
                     onLogout = {
                         navController.navigate(LoginRoute) {
-                            popUpTo(DashboardRoute) { inclusive = true }
+                            popUpTo(MainRoute) { inclusive = true }
                         }
                     }
                 )
             }
             
-            composable<AddSubmissionRoute> {
+            composable<AddSubmissionRoute> { backStackEntry ->
+                val args = backStackEntry.toRoute<AddSubmissionRoute>()
                 AddSubmissionScreen(
+                    initialProblemId = args.problemId ?: "",
+                    initialProblemName = args.problemName ?: "",
+                    initialDifficulty = args.difficulty ?: "Easy",
                     onNavigateBack = {
                         navController.popBackStack()
                     }
