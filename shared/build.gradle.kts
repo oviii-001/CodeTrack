@@ -43,6 +43,7 @@ kotlin {
             implementation(libs.compose.uiToolingPreview)
             api(libs.koin.android)
             implementation("com.google.android.gms:play-services-auth:21.1.1")
+            implementation(libs.ktor.client.okhttp)
         }
         commonMain.dependencies {
             implementation(libs.compose.runtime)
@@ -65,6 +66,12 @@ kotlin {
             api(libs.firebase.auth)
             api(libs.firebase.firestore)
             implementation(libs.kotlinx.serialization.json)
+            implementation(libs.ktor.client.core)
+            implementation(libs.ktor.client.content.negotiation)
+            implementation(libs.ktor.serialization.kotlinx.json)
+        }
+        jvmMain.dependencies {
+            implementation(libs.ktor.client.java)
         }
         commonTest.dependencies {
             implementation(libs.kotlin.test)

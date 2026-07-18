@@ -2,6 +2,7 @@ package com.ovi.codetrack.shared.presentation.viewmodels
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.ovi.codetrack.shared.domain.model.RoadmapProblem
 import com.ovi.codetrack.shared.domain.repository.SubmissionRepository
 import com.ovi.codetrack.shared.presentation.model.SubmissionUiModel
 import com.ovi.codetrack.shared.presentation.model.UserStatsUiModel
@@ -20,9 +21,13 @@ data class DashboardUiState(
     val recentSubmissions: List<SubmissionUiModel> = emptyList(),
     val currentStreak: Int = 0,
     val longestStreak: Int = 0,
-    val nextTask: com.ovi.codetrack.shared.domain.model.RoadmapProblem? = null,
+    val nextTask: RoadmapProblem? = null,
     val userName: String = "",
-    val error: String? = null
+    val error: String? = null,
+    // Daily target
+    val dailyTarget: Int = 3,
+    val todaySolvedCount: Int = 0,
+    val todayTasks: List<RoadmapProblem> = emptyList()
 )
 
 class DashboardViewModel(
@@ -43,7 +48,6 @@ class DashboardViewModel(
         fun getDayNumber(timestamp: Long) = (timestamp + TIMEZONE_OFFSET_MS) / DAY_MS
 
         val solvedDays = submissions.map { getDayNumber(it.timestamp) }.toSet().sortedDescending()
-        // We calculate streaks from the list itself and assume the most recent submission is "today" or "yesterday".
         
         var currentStreak = 0
         var longestStreak = 0
@@ -63,8 +67,6 @@ class DashboardViewModel(
             prevDay = day
         }
 
-        // To accurately calculate currentStreak without knowing "Today's Date", we assume the highest day in the list is the "latest active day".
-        // If they don't submit today, their current streak freezes at what it was. This is an acceptable compromise without a Clock dependency.
         if (solvedDays.isNotEmpty()) {
             currentStreak = 1
             var lastDay = solvedDays.first()
@@ -79,6 +81,16 @@ class DashboardViewModel(
             }
         }
 
+        // ===== Daily Target Calculation =====
+        val todayDayNumber = getDayNumber(System.currentTimeMillis())
+        val todaySolvedCount = submissions.count { getDayNumber(it.timestamp) == todayDayNumber }
+        
+        // Get next unsolved problems for today's goals (up to dailyTarget count)
+        val dailyTarget = 3
+        val todayTasks = com.ovi.codetrack.shared.domain.model.ProblemRoadmap.problems
+            .filter { it.id !in solvedIds }
+            .take(dailyTarget)
+
         val currentUser = Firebase.auth.currentUser
         val name = currentUser?.displayName?.takeIf { it.isNotBlank() }
             ?: currentUser?.email?.substringBefore("@")
@@ -91,7 +103,10 @@ class DashboardViewModel(
             currentStreak = currentStreak,
             longestStreak = longestStreak,
             nextTask = nextTask,
-            userName = name
+            userName = name,
+            dailyTarget = dailyTarget,
+            todaySolvedCount = todaySolvedCount,
+            todayTasks = todayTasks
         )
     }.stateIn(
         scope = viewModelScope,

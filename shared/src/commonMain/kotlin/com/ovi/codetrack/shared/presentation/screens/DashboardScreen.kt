@@ -45,7 +45,7 @@ import com.ovi.codetrack.shared.presentation.components.shimmerEffect
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DashboardScreen(
-    onNavigateToAdd: (String?, String?, String?) -> Unit,
+    onNavigateToAdd: (String?, String?, String?, String?) -> Unit,
     onLogout: () -> Unit,
     viewModel: DashboardViewModel = koinViewModel()
 ) {
@@ -89,7 +89,7 @@ fun DashboardScreen(
         },
         floatingActionButton = {
             ExtendedFloatingActionButton(
-                onClick = { onNavigateToAdd(null, null, null) },
+                onClick = { onNavigateToAdd(null, null, null, null) },
                 icon = { Icon(Icons.Default.Add, contentDescription = "Add") },
                 text = { Text("Log Code", fontWeight = FontWeight.Bold) },
                 containerColor = MaterialTheme.colorScheme.tertiaryContainer,
@@ -144,11 +144,15 @@ fun DashboardScreen(
                     }
                 }
 
-                uiState.nextTask?.let { task ->
+                if (uiState.todayTasks.isNotEmpty()) {
                     item {
-                        NextTaskCard(
-                            task = task,
-                            onLogIt = { onNavigateToAdd(task.id.toString(), task.title, task.difficulty.name) }
+                        TodaysGoalsCard(
+                            todaySolvedCount = uiState.todaySolvedCount,
+                            dailyTarget = uiState.dailyTarget,
+                            tasks = uiState.todayTasks,
+                            onLogIt = { task ->
+                                onNavigateToAdd(task.id.toString(), task.title, task.difficulty.name, task.tags.joinToString(","))
+                            }
                         )
                     }
                 }
@@ -254,8 +258,14 @@ fun StreakBadge(icon: androidx.compose.ui.graphics.vector.ImageVector, label: St
 }
 
 @Composable
-fun NextTaskCard(task: RoadmapProblem, onLogIt: () -> Unit) {
+fun TodaysGoalsCard(
+    todaySolvedCount: Int,
+    dailyTarget: Int,
+    tasks: List<RoadmapProblem>,
+    onLogIt: (RoadmapProblem) -> Unit
+) {
     val uriHandler = LocalUriHandler.current
+    val progress = (todaySolvedCount.toFloat() / dailyTarget.toFloat()).coerceIn(0f, 1f)
 
     OutlinedCard(
         modifier = Modifier.fillMaxWidth(),
@@ -266,45 +276,94 @@ fun NextTaskCard(task: RoadmapProblem, onLogIt: () -> Unit) {
         border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.onBackground.copy(alpha = 0.1f))
     ) {
         Column(modifier = Modifier.padding(20.dp)) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Icon(Icons.Default.Star, contentDescription = null, tint = MaterialTheme.colorScheme.tertiary, modifier = Modifier.size(24.dp))
-                Spacer(modifier = Modifier.width(8.dp))
-                Text("Today's Task", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold, color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f))
-            }
-            Spacer(modifier = Modifier.height(24.dp))
-            Text(text = task.title, style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onBackground)
-            Spacer(modifier = Modifier.height(16.dp))
-            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                Box(modifier = Modifier.clip(CircleShape).background(MaterialTheme.colorScheme.primaryContainer).padding(horizontal = 16.dp, vertical = 8.dp)) {
-                    Text(task.difficulty.name, style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onPrimaryContainer)
-                }
-                task.tags.take(2).forEach { tag ->
-                    Box(modifier = Modifier.clip(CircleShape).background(MaterialTheme.colorScheme.onTertiaryContainer.copy(alpha = 0.1f)).padding(horizontal = 16.dp, vertical = 8.dp)) {
-                        Text(text = tag, style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onTertiaryContainer)
+            // Header with circular progress
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween,
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Column {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Icon(Icons.Default.Flag, contentDescription = null, tint = MaterialTheme.colorScheme.tertiary, modifier = Modifier.size(24.dp))
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text("Today's Goals", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold, color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.8f))
                     }
+                    Spacer(modifier = Modifier.height(4.dp))
+                    Text(
+                        text = if (todaySolvedCount >= dailyTarget) "Goal crushed! \uD83D\uDD25" else "${dailyTarget - todaySolvedCount} more to go!",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f)
+                    )
+                }
+
+                Box(contentAlignment = Alignment.Center, modifier = Modifier.size(56.dp)) {
+                    CircularProgressIndicator(
+                        progress = { 1f },
+                        modifier = Modifier.fillMaxSize(),
+                        color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.1f),
+                        strokeWidth = 6.dp,
+                    )
+                    CircularProgressIndicator(
+                        progress = { progress },
+                        modifier = Modifier.fillMaxSize(),
+                        color = MaterialTheme.colorScheme.primary,
+                        strokeWidth = 6.dp,
+                    )
+                    Text(
+                        text = "$todaySolvedCount/$dailyTarget",
+                        style = MaterialTheme.typography.labelMedium,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.onBackground
+                    )
                 }
             }
-            Spacer(modifier = Modifier.height(20.dp))
-            Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
-                Button(
-                    onClick = { uriHandler.openUri(task.url) },
-                    modifier = Modifier.weight(1f).height(48.dp),
-                    shape = CircleShape,
-                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary),
-                ) {
-                    Icon(Icons.Default.OpenInBrowser, contentDescription = null, modifier = Modifier.size(20.dp))
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text("Solve", style = MaterialTheme.typography.titleMedium)
-                }
-                Button(
-                    onClick = onLogIt,
-                    modifier = Modifier.weight(1f).height(48.dp),
-                    shape = CircleShape,
-                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.05f), contentColor = MaterialTheme.colorScheme.primary)
-                ) {
-                    Icon(Icons.Default.Check, contentDescription = null, modifier = Modifier.size(20.dp))
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text("Log It", style = MaterialTheme.typography.titleMedium)
+
+            Spacer(modifier = Modifier.height(24.dp))
+
+            // Task List
+            Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                tasks.forEach { task ->
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clip(RoundedCornerShape(12.dp))
+                            .background(MaterialTheme.colorScheme.onBackground.copy(alpha = 0.03f))
+                            .clickable { uriHandler.openUri(task.url) }
+                            .padding(12.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        Column(modifier = Modifier.weight(1f)) {
+                            Text(
+                                text = task.title,
+                                style = MaterialTheme.typography.titleSmall,
+                                fontWeight = FontWeight.SemiBold,
+                                color = MaterialTheme.colorScheme.onBackground
+                            )
+                            Spacer(modifier = Modifier.height(4.dp))
+                            Text(
+                                text = task.difficulty.name,
+                                style = MaterialTheme.typography.labelSmall,
+                                color = when (task.difficulty) {
+                                    Difficulty.EASY -> EasyColor
+                                    Difficulty.MEDIUM -> MediumColor
+                                    Difficulty.HARD -> HardColor
+                                    Difficulty.UNKNOWN -> MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f)
+                                },
+                                fontWeight = FontWeight.Bold
+                            )
+                        }
+
+                        IconButton(
+                            onClick = { onLogIt(task) },
+                            modifier = Modifier
+                                .size(36.dp)
+                                .clip(CircleShape)
+                                .background(MaterialTheme.colorScheme.primaryContainer)
+                        ) {
+                            Icon(Icons.Default.Check, contentDescription = "Log It", tint = MaterialTheme.colorScheme.onPrimaryContainer, modifier = Modifier.size(18.dp))
+                        }
+                    }
                 }
             }
         }

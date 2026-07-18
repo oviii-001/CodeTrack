@@ -21,5 +21,6 @@ object HistoryRoute
 data class AddSubmissionRoute(
     val problemId: String? = null,
     val problemName: String? = null,
-    val difficulty: String? = null
+    val difficulty: String? = null,
+    val tags: String? = null
 )

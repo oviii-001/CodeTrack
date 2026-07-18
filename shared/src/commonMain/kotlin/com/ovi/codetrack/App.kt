@@ -42,8 +42,8 @@ fun App() {
             
             composable<MainRoute> {
                 MainScreen(
-                    onNavigateToAdd = { problemId, problemName, difficulty ->
-                        navController.navigate(AddSubmissionRoute(problemId, problemName, difficulty))
+                    onNavigateToAdd = { problemId, problemName, difficulty, tags ->
+                        navController.navigate(AddSubmissionRoute(problemId, problemName, difficulty, tags))
                     },
                     onLogout = {
                         navController.navigate(LoginRoute) {
@@ -59,6 +59,7 @@ fun App() {
                     initialProblemId = args.problemId ?: "",
                     initialProblemName = args.problemName ?: "",
                     initialDifficulty = args.difficulty ?: "Easy",
+                    initialTags = args.tags ?: "",
                     onNavigateBack = {
                         navController.popBackStack()
                     }

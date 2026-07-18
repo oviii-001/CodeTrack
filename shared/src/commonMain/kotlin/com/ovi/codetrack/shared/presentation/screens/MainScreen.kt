@@ -24,7 +24,7 @@ import com.ovi.codetrack.shared.presentation.navigation.RoadmapRoute
 
 @Composable
 fun MainScreen(
-    onNavigateToAdd: (String?, String?, String?) -> Unit,
+    onNavigateToAdd: (String?, String?, String?, String?) -> Unit,
     onLogout: () -> Unit
 ) {
     val navController = rememberNavController()

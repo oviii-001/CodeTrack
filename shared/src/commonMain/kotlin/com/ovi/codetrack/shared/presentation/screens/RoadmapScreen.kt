@@ -32,7 +32,7 @@ import org.koin.compose.viewmodel.koinViewModel
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun RoadmapScreen(
-    onNavigateToAdd: (String?, String?, String?) -> Unit,
+    onNavigateToAdd: (String?, String?, String?, String?) -> Unit,
     viewModel: RoadmapViewModel = koinViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
@@ -77,7 +77,7 @@ fun RoadmapScreen(
                 RoadmapProblemItem(
                     problem = problem,
                     isSolved = isSolved,
-                    onLogIt = { onNavigateToAdd(problem.id.toString(), problem.title, problem.difficulty.name) }
+                    onLogIt = { onNavigateToAdd(problem.id.toString(), problem.title, problem.difficulty.name, problem.tags.joinToString(",")) }
                 )
             }
         }

@@ -15,6 +15,7 @@ import com.ovi.codetrack.shared.presentation.viewmodels.DashboardViewModel
 import com.ovi.codetrack.shared.presentation.viewmodels.AddSubmissionViewModel
 import org.koin.core.module.dsl.viewModel
 import com.ovi.codetrack.shared.data.local.getDatabaseBuilder
+import com.ovi.codetrack.shared.data.remote.LeetCodeApiService
 
 import com.ovi.codetrack.shared.presentation.viewmodels.RoadmapViewModel
 import com.ovi.codetrack.shared.presentation.viewmodels.HistoryViewModel
@@ -30,9 +31,10 @@ val commonModule = module {
     }
     single { get<CodeTrackDatabase>().submissionDao() }
     
+    single { LeetCodeApiService() }
     viewModel { LoginViewModel() }
     viewModel { DashboardViewModel(get()) }
-    viewModel { AddSubmissionViewModel(get()) }
+    viewModel { AddSubmissionViewModel(get(), get()) }
     viewModel { RoadmapViewModel(get()) }
     viewModel { HistoryViewModel(get()) }
 }
